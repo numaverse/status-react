@@ -22,12 +22,17 @@
        :save-networks new-networks'})))
 
 (handlers/register-handler-fx
+  ::close-application
+  (fn [_ _]
+    {:close-application nil}))
+
+(handlers/register-handler-fx
   ::save-network
   (fn [{:keys [db now] :as cofx} [_ network]]
-    (handlers/merge-fx cofx
-                       {:close-application nil}
+    (handlers/merge-fx cofx 
                        (accounts-events/account-update {:network      network
-                                                        :last-updated now}))))
+                                                        :last-updated now}
+                                                       [::close-application]))))
 
 (handlers/register-handler-fx
   :connect-network

@@ -15,5 +15,10 @@
 
 (re-frame/reg-fx
   :data-store/save-account
-  (fn [account]
-    (async/go (async/>! core/realm-queue #(data-store/save account true)))))
+  (fn [{:keys [after-update-event] :as account}]
+    (let [account-to-save (dissoc account :after-update-event)]
+      (async/go (async/>! core/realm-queue #(if after-update-event
+                                              (do (data-store/save account-to-save true)
+                                                  (re-frame/dispatch after-update-event))
+                                              (data-store/save account-to-save true)))))))
+

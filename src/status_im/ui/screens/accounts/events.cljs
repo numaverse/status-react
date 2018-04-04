@@ -115,15 +115,19 @@
      :data-store/save-account new-account}))
 
 (defn account-update
-  "Takes effects (containing :db) + new account fields, adds all effects necessary for account update."
-  [new-account-fields {{:accounts/keys [accounts current-account-id] :as db} :db :as cofx}]
-  (let [current-account           (get accounts current-account-id)
-        new-account               (merge current-account new-account-fields)
-        {:keys [name photo-path]} new-account]
-    (handlers/merge-fx cofx
-                       {:db                      (assoc-in db [:accounts/accounts current-account-id] new-account)
-                        :data-store/save-account new-account}
-                       (transport/send (message.contact/ContactUpdate. name photo-path) nil))))
+  "Takes effects (containing :db) + new account fields, adds all effects necessary for account update.
+  Optionally, one can specify event to be dispatched after fields are persisted."
+  ([new-account-fields cofx]
+   (account-update new-account-fields nil cofx))
+  ([new-account-fields after-update-event {{:accounts/keys [accounts current-account-id] :as db} :db :as cofx}]
+   (let [current-account (get accounts current-account-id)
+         new-account     (merge current-account new-account-fields)
+         fx              {:db                      (assoc-in db [:accounts/accounts current-account-id] new-account)
+                          :data-store/save-account (assoc new-account :after-update-event after-update-event)}
+         {:keys [name photo-path]} new-account]
+     (if (or (:name new-account-fields) (:photo-path new-account-fields))
+       (handlers/merge-fx cofx fx (transport/send (message.contact/ContactUpdate. name photo-path) nil))
+       fx))))
 
 (handlers/register-handler-fx
   :send-account-update-if-needed

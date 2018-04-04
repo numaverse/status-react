@@ -168,7 +168,7 @@
 
 (re-frame/reg-fx
   ::status-module-initialized-fx
-  (fn []
+  (fn [_]
     (status/module-initialized!)))
 
 (re-frame/reg-fx
@@ -183,7 +183,7 @@
 
 (re-frame/reg-fx
   ::testfairy-alert
-  (fn []
+  (fn [_]
     (when config/testfairy-enabled?
       (utils/show-popup
         (i18n/label :testfairy-title)
@@ -191,7 +191,7 @@
 
 (re-frame/reg-fx
   ::get-fcm-token-fx
-  (fn []
+  (fn [_]
     (notifications/get-fcm-token)))
 
 (re-frame/reg-fx
@@ -207,7 +207,8 @@
 
 (re-frame/reg-fx
   :close-application
-  (fn [] (status/close-application)))
+  (fn [_]
+    (status/close-application)))
 
 ;;;; Handlers
 
